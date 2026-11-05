@@ -5,12 +5,21 @@ import { UsersModule } from './users/users.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoutesModule } from './routes/routes.module.js';
+import { StopsModule } from './stops/stops.module.js';
+import { IncidencesModule } from './incidences/incidences.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      
     }),
+
+    StopsModule,
+    UsersModule,
+    AuthModule,
+    RoutesModule,
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -29,6 +38,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
     UsersModule,
     AuthModule,
+    RoutesModule,
+    StopsModule,
+    IncidencesModule,
   ],
 })
 export class AppModule {}
