@@ -1,404 +1,250 @@
-# 🔐 MVC CRUD Login — NestJS
+# MoviAlerta Quito
 
-Aplicación web desarrollada para la materia **Ingeniería Web**, implementando el patrón **MVC**, operaciones **CRUD** y un sistema de **autenticación mediante Login y JWT**.
+Sistema de administración y gestión de información para **MoviAlerta Quito**, desarrollado como proyecto académico para la asignatura de Ingeniería Web de la Universidad de Las Américas (UDLA).
 
-El proyecto permite gestionar usuarios mediante operaciones de creación, consulta, actualización y eliminación, manteniendo las rutas del CRUD protegidas mediante autenticación.
+El proyecto implementa una arquitectura MVC utilizando NestJS, TypeScript y PostgreSQL. Permite administrar recorridos, paradas e incidencias que alimentan la información del sistema principal.
 
-<p align="center">
+## Objetivo
 
-![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge\&logo=nestjs\&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge\&logo=jsonwebtokens\&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge\&logo=node.js\&logoColor=white)
-![Status](https://img.shields.io/badge/STATUS-Completed-success?style=for-the-badge)
+Desarrollar una administración que permita gestionar los datos del Core de MoviAlerta Quito, manteniendo relaciones válidas entre las entidades y protegiendo las operaciones mediante autenticación.
 
-</p>
+## Funcionalidades
 
----
+### Autenticación
+- Inicio de sesión mediante correo electrónico y contraseña.
+- Validación de credenciales con bcrypt.
+- Generación de tokens JWT.
+- Protección de las operaciones administrativas mediante `JwtAuthGuard`.
 
-## 📋 Índice
+### Gestión de recorridos
+- Registrar recorridos.
+- Consultar recorridos.
+- Actualizar recorridos.
+- Eliminar recorridos.
+- Validar que no existan códigos de recorrido duplicados.
 
-* [Descripción del proyecto](#-descripción-del-proyecto)
-* [Objetivos](#-objetivos)
-* [Funcionalidades](#-funcionalidades)
-* [Arquitectura del proyecto](#-arquitectura-del-proyecto)
-* [Autenticación](#-autenticación)
-* [Tecnologías utilizadas](#-tecnologías-utilizadas)
-* [Requisitos](#-requisitos)
-* [Instalación y ejecución](#-instalación-y-ejecución)
-* [Endpoints](#-endpoints)
-* [Pruebas](#-pruebas)
-* [Autor](#-autor)
-* [Licencia](#-licencia)
+### Gestión de paradas
+- Registrar paradas asociadas a un recorrido.
+- Consultar, actualizar y eliminar paradas.
+- Validar que el recorrido seleccionado exista.
 
----
+### Gestión de incidencias
+- Registrar incidencias de tipo retraso, aglomeración o autobús que no pasó.
+- Consultar, actualizar y eliminar incidencias.
+- Seleccionar el recorrido y su parada mediante listas desplegables dependientes.
+- Validar en el backend que la parada seleccionada pertenezca al recorrido indicado antes de guardar la incidencia.
 
-## 📌 Descripción del proyecto
+## Validaciones del backend
 
-**MVC CRUD Login** es una aplicación desarrollada con **NestJS y TypeScript** como parte de la asignatura Ingeniería Web.
+Las validaciones se realizan en el servidor, antes de almacenar los datos en PostgreSQL.
 
-El proyecto aplica el patrón de arquitectura **MVC** mediante Controllers, Services y Modules, incorporando un sistema de autenticación para controlar el acceso al CRUD de usuarios.
+Entre ellas:
 
-Las operaciones disponibles son:
+- Evitar códigos de recorrido duplicados.
+- Comprobar que el recorrido seleccionado exista.
+- Comprobar que la parada exista.
+- Verificar que la parada pertenezca al recorrido seleccionado.
+- Proteger las operaciones administrativas mediante JWT.
 
-* Crear usuarios.
-* Consultar usuarios.
-* Actualizar usuarios.
-* Eliminar usuarios.
-* Iniciar sesión mediante correo y contraseña.
-* Generar un token JWT después de una autenticación exitosa.
-* Proteger las rutas del CRUD mediante un `JwtAuthGuard`.
+La interfaz facilita la selección de relaciones mediante dropdowns, pero la validación definitiva se realiza en el backend.
 
----
+## Arquitectura
 
-## 🎯 Objetivos
-
-### Objetivo general
-
-Desarrollar una aplicación utilizando el patrón MVC que integre operaciones CRUD y un sistema de autenticación para proteger el acceso a los recursos.
-
-### Objetivos específicos
-
-* Aplicar el patrón MVC en una aplicación desarrollada con NestJS.
-* Implementar las operaciones CRUD para la gestión de usuarios.
-* Implementar un sistema de Login.
-* Utilizar bcrypt para la validación de contraseñas.
-* Generar tokens de autenticación mediante JWT.
-* Proteger las rutas del CRUD mediante un Guard.
-* Realizar pruebas de las diferentes operaciones mediante solicitudes HTTP.
-
----
-
-## ⚙️ Funcionalidades
-
-### 🔐 Autenticación
-
-* Login mediante correo y contraseña.
-* Validación de credenciales.
-* Generación de token JWT.
-* Protección de las rutas del CRUD.
-* Respuesta `401 Unauthorized` cuando no se proporciona un token.
-
-### 👤 Gestión de usuarios
-
-| Operación          | Método | Endpoint     |
-| ------------------ | ------ | ------------ |
-| Consultar usuarios | GET    | `/users`     |
-| Crear usuario      | POST   | `/users`     |
-| Actualizar usuario | PUT    | `/users/:id` |
-| Eliminar usuario   | DELETE | `/users/:id` |
-
-### 🔑 Login
-
-| Operación      | Método | Endpoint      |
-| -------------- | ------ | ------------- |
-| Iniciar sesión | POST   | `/auth/login` |
-
----
-
-## 🏗️ Arquitectura del proyecto
-
-El proyecto está organizado mediante módulos siguiendo la estructura de NestJS:
+El proyecto utiliza la estructura modular de NestJS:
 
 ```text
 src/
-│
 ├── auth/
-│   ├── auth.controller.ts
-│   ├── auth.service.ts
-│   └── auth.module.ts
-│
-├── users/
-│   ├── users.controller.ts
-│   ├── users.service.ts
-│   └── users.module.ts
-│
 ├── guards/
-│   └── jwt-auth.guard.ts
-│
+├── users/
+├── routes/
+│   └── entities/
+├── stops/
+│   └── entities/
+├── incidences/
+│   └── entities/
 ├── app.module.ts
 └── main.ts
+
+public/
+├── admin.html
+├── css/
+│   └── admin.css
+└── js/
+    └── admin.js
 ```
 
-### 📁 Auth
+### Responsabilidad de las capas
 
-Se encarga del sistema de autenticación y del endpoint de Login.
+- **Controllers:** reciben las solicitudes HTTP y exponen los endpoints.
+- **Services:** contienen la lógica de negocio y las validaciones.
+- **Entities:** representan las tablas y relaciones de PostgreSQL.
+- **Modules:** organizan e integran los componentes.
+- **Guards:** protegen los endpoints que requieren autenticación.
 
-### 📁 Users
+## Base de datos
 
-Contiene la gestión de usuarios y las operaciones CRUD.
+Motor: **PostgreSQL**
 
-### 📁 Guards
+La aplicación utiliza TypeORM para gestionar las entidades y sus relaciones.
 
-Contiene el `JwtAuthGuard`, encargado de proteger las rutas que requieren autenticación.
+Tablas principales:
 
-### 📄 AppModule
+- `users`: usuarios del sistema.
+- `routes`: recorridos.
+- `stops`: paradas asociadas a recorridos.
+- `incidences`: incidencias asociadas a recorridos y, cuando corresponde, a paradas.
 
-Es el módulo principal encargado de integrar los diferentes módulos de la aplicación.
+## Tecnologías utilizadas
 
-### 📄 Main
-
-Es el punto de entrada de la aplicación NestJS.
-
----
-
-## 🔒 Autenticación mediante JWT
-
-El flujo de autenticación funciona de la siguiente manera:
-
-```text
-Usuario
-   │
-   ▼
-POST /auth/login
-   │
-   ▼
-Validación de credenciales
-   │
-   ▼
-Credenciales correctas
-   │
-   ▼
-Generación de JWT
-   │
-   ▼
-Access Token
-   │
-   ▼
-Solicitud al CRUD
-   │
-   ▼
-JwtAuthGuard
-   │
-   ├── Token válido ──► Acceso permitido
-   │
-   └── Sin token ─────► 401 Unauthorized
-```
-
-Para acceder a las rutas protegidas se debe enviar el token mediante el encabezado:
-
-```http
-Authorization: Bearer <TOKEN>
-```
-
----
-
-## 🛠️ Tecnologías utilizadas
-
-* **NestJS**
-* **TypeScript**
-* **Node.js**
-* **JWT (JSON Web Token)**
-* **bcrypt**
-* **npm**
-* **PowerShell** para las pruebas de las solicitudes HTTP.
-
----
+- NestJS
+- TypeScript
+- Node.js
+- PostgreSQL
+- TypeORM
+- JWT
+- bcrypt
+- HTML5
+- CSS3
+- JavaScript
+- Git y GitHub
 
 ## 💻 Requisitos
 
-Antes de ejecutar el proyecto se necesita tener instalado:
+- Node.js
+- npm
+- PostgreSQL
+- Git
 
-* Node.js
-* npm
-* NestJS CLI
-
-Versiones utilizadas durante el desarrollo:
-
-```text
-Node.js: 22.16.0
-npm: 11.21.0
-Nest CLI: 12.0.8
-```
-
----
-
-## 🚀 Instalación y ejecución
+## Instalación y ejecución local
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/Alejomanzano/mvc-crud-login.git
+git clone https://github.com/Alejomanzano/MoviAlerta-Quito.git
 ```
 
-### 2. Entrar al proyecto
+### 2. Entrar en la carpeta
 
 ```bash
-cd mvc-crud-login
+cd MoviAlerta-Quito
 ```
 
-### 3. Instalar las dependencias
+### 3. Instalar dependencias
 
 ```bash
 npm install
 ```
 
-### 4. Ejecutar el proyecto
+### 4. Configurar las variables de entorno
+
+Crear un archivo `.env` en la raíz del proyecto:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=TU_CLAVE_DE_POSTGRESQL
+DB_DATABASE=movi_alerta_quito
+```
+
+Reemplazar `TU_CLAVE_DE_POSTGRESQL` por la contraseña configurada en PostgreSQL.
+
+**Importante:** no subir el archivo `.env` a GitHub ni publicar contraseñas o secretos.
+
+### 5. Ejecutar el backend
 
 ```bash
 npm run start:dev
 ```
 
-La aplicación estará disponible en:
+El backend estará disponible localmente en:
 
 ```text
 http://localhost:3000
 ```
 
----
+### 6. Abrir la administración
 
-## 🧪 Pruebas
+En otra terminal, desde la raíz del proyecto:
 
-Las pruebas fueron realizadas mediante solicitudes HTTP utilizando PowerShell.
-
-### 🔐 Login
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/auth/login" -Method POST -ContentType "application/json" -Body '{"email":"ariel.manzano@udla.edu.ec","password":"123456"}'
+```bash
+npx serve public -l 5500
 ```
 
-Una autenticación correcta devuelve:
+Abrir en el navegador la dirección que muestre la terminal. Si el puerto 5500 está ocupado, `serve` puede seleccionar otro puerto.
 
-```text
-message        access_token
--------        ------------
-Inicio Exitoso eyJhbGciOi...
-```
+## Endpoints principales
 
----
+Todas las operaciones de administración de usuarios, recorridos, paradas e incidencias requieren autenticación JWT, excepto el inicio de sesión.
 
-### 🚫 Acceso sin autenticación
+### Autenticación
 
-Si se intenta acceder al CRUD sin proporcionar un token:
+| Método | Endpoint | Descripción |
+|---|---|---|
+| POST | `/auth/login` | Iniciar sesión |
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/users" -Method GET
-```
+### Usuarios
 
-La aplicación responde:
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/users` | Consultar usuarios |
+| POST | `/users` | Crear usuario |
+| PUT | `/users/:id` | Actualizar usuario |
+| DELETE | `/users/:id` | Eliminar usuario |
 
-```json
-{
-  "message": "Token no proporcionado",
-  "error": "Unauthorized",
-  "statusCode": 401
-}
-```
+### Recorridos
 
-Esto demuestra que las rutas del CRUD están protegidas.
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/routes` | Consultar recorridos |
+| GET | `/routes/:id` | Consultar un recorrido |
+| POST | `/routes` | Crear recorrido |
+| PUT | `/routes/:id` | Actualizar recorrido |
+| DELETE | `/routes/:id` | Eliminar recorrido |
 
----
+### Paradas
 
-### 👀 Consultar usuarios
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/stops` | Consultar paradas |
+| GET | `/stops/:id` | Consultar una parada |
+| POST | `/stops` | Crear parada |
+| PUT | `/stops/:id` | Actualizar parada |
+| DELETE | `/stops/:id` | Eliminar parada |
 
-Después de obtener el token:
+### Incidencias
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/users" -Method GET -Headers @{ Authorization = "Bearer $token" }
-```
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/incidences` | Consultar incidencias |
+| GET | `/incidences/:id` | Consultar una incidencia |
+| POST | `/incidences` | Registrar incidencia |
+| PUT | `/incidences/:id` | Actualizar incidencia |
+| DELETE | `/incidences/:id` | Eliminar incidencia |
 
----
+## Pruebas realizadas
 
-### ➕ Crear usuario
+Se realizaron pruebas mediante Postman y la interfaz de administración.
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/users" -Method POST -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" -Body '{"name":"Carlos","lastname":"Perez","email":"carlos@example.com","password":"123456"}'
-```
+- Inicio de sesión y generación de JWT.
+- Bloqueo de endpoints protegidos sin token.
+- Operaciones CRUD de recorridos.
+- Rechazo de códigos de recorrido duplicados.
+- Operaciones CRUD de paradas.
+- Selección de recorrido y carga de paradas relacionadas mediante dropdown.
+- Registro de incidencias desde la interfaz.
+- Rechazo de incidencias cuya parada no pertenece al recorrido seleccionado.
+- Verificación de los registros almacenados en PostgreSQL.
 
----
+## Autor
 
-### ✏️ Actualizar usuario
+**Alejandro Manzano**  
+Estudiante de Ingeniería de Software  
+Universidad de Las Américas (UDLA), Ecuador.
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/users/{id}" -Method PUT -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" -Body '{"name":"Carlos Actualizado","lastname":"Perez","email":"carlos@example.com","password":"123456"}'
-```
+GitHub: https://github.com/Alejomanzano
 
-> Reemplazar `{id}` por el ID correspondiente al usuario.
+## Propósito académico
 
----
-
-### 🗑️ Eliminar usuario
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/users/{id}" -Method DELETE -Headers @{ Authorization = "Bearer $token" }
-```
-
-> Reemplazar `{id}` por el ID correspondiente al usuario.
-
----
-
-## 📊 Flujo general de la aplicación
-
-```text
-              ┌───────────────┐
-              │    Usuario    │
-              └───────┬───────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │     Login     │
-              └───────┬───────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │   JWT Token   │
-              └───────┬───────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │  JWT Guard    │
-              └───────┬───────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │   Controller  │
-              └───────┬───────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │    Service    │
-              └───────┬───────┘
-                      │
-                      ▼
-              ┌───────────────┐
-              │ Gestión Users │
-              └───────────────┘
-```
-
----
-
-## 👨‍💻 Autor
-
-**Alejandro Manzano**
-
-Estudiante de Ingeniería de Software
-
-Universidad de Las Américas — UDLA
-
-GitHub:
-
-https://github.com/Alejomanzano
-
----
-
-## 📄 Licencia
-
-Este proyecto fue desarrollado con fines **académicos** para la asignatura de Ingeniería Web.
-
----
-
-## 🎓 Proyecto académico
-
-Este proyecto permitió aplicar los siguientes conceptos:
-
-* Arquitectura MVC.
-* Desarrollo con NestJS.
-* Operaciones CRUD.
-* Autenticación.
-* JWT.
-* Guards.
-* Servicios y controladores.
-* Manejo de solicitudes HTTP.
-* Protección de rutas.
-
-**Estado:** ✅ Proyecto académico finalizado.
+Proyecto desarrollado para aplicar arquitectura MVC, operaciones CRUD, autenticación, relaciones entre entidades, validaciones en backend y administración de información mediante una interfaz web.

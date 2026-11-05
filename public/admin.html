@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración | MoviAlerta Quito</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <script src="js/admin.js" defer></script>
+</head>
+<body>
+
+    <main class="container">
+        <header class="header">
+            <h1>MoviAlerta Quito</h1>
+            <p>Panel de administración</p>
+        </header>
+
+        <section id="login" class="card">
+            <h2>Iniciar sesión</h2>
+
+            <label for="email">Correo electrónico</label>
+            <input id="email" type="email" value="ariel.manzano@udla.edu.ec">
+
+            <label for="password">Contraseña</label>
+            <input id="password" type="password" value="123456">
+
+            <button id="btnLogin">Ingresar</button>
+        </section>
+
+        <section id="administracion" class="card" hidden>
+            <h2>Registrar incidencia</h2>
+            <p class="description">
+                Selecciona una ruta y después la parada correspondiente.
+            </p>
+
+            <form id="formIncidencia">
+
+                <label for="ruta">Ruta</label>
+                <select id="ruta" required>
+                    <option value="">Selecciona una ruta</option>
+                </select>
+
+                <label for="parada">Parada</label>
+                <select id="parada" required disabled>
+                    <option value="">Primero selecciona una ruta</option>
+                </select>
+
+                <label for="tipo">Tipo de incidencia</label>
+                <select id="tipo" required>
+                    <option value="Retraso">Retraso</option>
+                    <option value="Aglomeración">Aglomeración</option>
+                    <option value="Autobús no pasó">Autobús no pasó</option>
+                </select>
+
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" rows="4"
+                    placeholder="Describe la incidencia..." required></textarea>
+
+                <label for="severidad">Severidad</label>
+                <select id="severidad" required>
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                </select>
+
+                <button type="submit">Guardar incidencia</button>
+            </form>
+
+            <button id="btnCerrarSesion" class="btn-secondary">
+                Cerrar sesión
+            </button>
+        </section>
+
+        <p id="mensaje"></p>
+    </main>
+
+</body>
+</html>
