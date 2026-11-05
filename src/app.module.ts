@@ -33,8 +33,11 @@ import { IncidencesModule } from './incidences/incidences.module.js';
         database: configService.getOrThrow<string>('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: true,
-      }),
+        ssl: {
+          rejectUnauthorized: false,
+        },
     }),
+}),
 
     UsersModule,
     AuthModule,
