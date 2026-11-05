@@ -15,7 +15,8 @@ import { ConfigService } from '@nestjs/config';
       expiresIn: '1h',
     }
     }),
-  })],
+  })
+  ],
   providers: [AuthService,],
   controllers: [AuthController],
 })

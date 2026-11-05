@@ -17,7 +17,7 @@ export class AuthService {
             throw new BadRequestException('Obligatorio Correo y Contrasenia');
         }
 
-        const user = this.userService.findByEmail(body.email);
+        const user = await this.userService.findByEmail(body.email);
         
         if(!user){
             throw new UnauthorizedException('Usuario o Contrasenia Incorrectos')
@@ -28,7 +28,7 @@ export class AuthService {
         )
         
         if(!passwordValid){
-            return new UnauthorizedException('Contrasenia Incorrecta')
+            throw new UnauthorizedException('Contrasenia Incorrecta')
             
         }
 
