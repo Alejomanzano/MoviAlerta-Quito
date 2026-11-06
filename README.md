@@ -109,7 +109,7 @@ Tablas principales:
 - JavaScript
 - Git y GitHub
 
-## 💻 Requisitos
+## Requisitos
 
 - Node.js
 - npm
