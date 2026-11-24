@@ -137,6 +137,13 @@ export class IncidencesService {
           throw new NotFoundException('La parada seleccionada no existe');
         }
 
+        const routeStop = await this.routeStopRepository.findOne({
+          where: {
+            route: {id: route.id},
+            stop: { id:stop.id},
+          }
+        })
+
         if(!RouteStop){
           throw new NotFoundException(
             'la parada seleccionada no pertenece a la ruta indicada'

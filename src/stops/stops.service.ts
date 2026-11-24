@@ -49,10 +49,10 @@ export class StopsService {
     const routeStop= this.routeStopRepository.create({
       route,
       stop: savedStop,
-      sequence: Number(data.sequence),
+      sequence,
     })
 
-    await this.routeRepository.save(routeStop);
+    await this.routeStopRepository.save(routeStop);
 
     return savedStop;
   }
@@ -96,7 +96,7 @@ export class StopsService {
 
     Object.assign(stop,{
       name: data.name ?? stop.name,
-      address: data.adrress ?? stop.description,
+      address: data.adrress ?? stop.address,
       isActive: data.isActive ?? stop.isActive,
     });
 

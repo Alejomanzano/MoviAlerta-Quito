@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique }
 import { Route } from "../../routes/entities/route.entity.js";
 import { Stop } from "../../stops/entities/stop.entity.js";
 
-@Entity('route_stips')
+@Entity('route_stops')
 @Unique(['route', 'sequence'])
 @Unique(['route', 'stop'])
 export class RouteStop{
