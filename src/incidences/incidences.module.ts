@@ -11,10 +11,11 @@ import { Stop } from '../stops/entities/stop.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { RoutesModule } from '../routes/routes.module.js';
 import { StopsModule } from '../stops/stops.module.js';
+import { RouteStop } from '../route-stops/entities/route-stop.entity.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Incidence, Route, Stop]),
+    TypeOrmModule.forFeature([Incidence, Route, Stop, RouteStop]),
     AuthModule,
     RoutesModule,
     StopsModule,

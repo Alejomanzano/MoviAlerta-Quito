@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { Route } from "../../routes/entities/route.entity.js";
+import { RouteStop } from "../../route-stops/entities/route-stop.entity.js";
 
 @Entity('stops') export class Stop{
 
@@ -13,7 +14,7 @@ import { Route } from "../../routes/entities/route.entity.js";
 
     @Column({default: true}) isActive!: boolean;
 
-    @ManyToOne(() => Route, {nullable: false, onDelete: 'RESTRICT'})
-    @JoinColumn({name: 'routeId'}) route!: Route;
+    @OneToMany(() => RouteStop, routestop => routestop.stop)
+    routeStops!: RouteStop[];
 }
 

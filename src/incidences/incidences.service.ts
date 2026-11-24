@@ -10,6 +10,8 @@ import { Repository } from 'typeorm';
 import { Incidence } from './entities/incidence.entity.js';
 import { Route } from '../routes/entities/route.entity.js';
 import { Stop } from '../stops/entities/stop.entity.js';
+import { RouteStop } from '../route-stops/entities/route-stop.entity.js';
+
 
 @Injectable()
 export class IncidencesService {
@@ -22,6 +24,10 @@ export class IncidencesService {
 
     @InjectRepository(Stop)
     private stopRepository: Repository<Stop>,
+
+    @InjectRepository(RouteStop)
+    private routeStopRepository: Repository<RouteStop>,
+
   ) {}
 
   // Crear una incidencia
@@ -37,21 +43,27 @@ export class IncidencesService {
     let stop: Stop | null = null;
 
     if (data.stopId !== undefined && data.stopId !== null) {
-      stop = await this.stopRepository.findOne({
+      stop = await this.stopRepository.findOneBy({
         
-        where: {id: Number(data.stopId),},
-        relations: {route: true,
-        },
+        id:Number(data.stopId),
+        
       });
 
       if (!stop) {
         throw new NotFoundException('La parada seleccionada no existe');
       }
 
-      if (stop.route.id !== route.id) {
+      const routeStop = await this.routeStopRepository.findOne({
+        where: {
+          route: { id: route.id},
+          stop: {id: stop.id},
+        },
+      })
+
+      if(!routeStop){
         throw new NotFoundException(
-          'La parada seleccionada no pertenece a la ruta indicada',
-        );
+          'la parada no pertence a la ruta'
+        )
       }
     }
 
@@ -117,27 +129,33 @@ export class IncidencesService {
       if (data.stopId === null) {
         stop = null;
       } else {
-        stop = await this.stopRepository.findOne({
-          where: {id: Number(data.stopId),},
-          relations: {route: true,
-
-          },
+        stop = await this.stopRepository.findOneBy({
+          id: Number(data.stopId),
         });
 
         if (!stop) {
           throw new NotFoundException('La parada seleccionada no existe');
         }
 
-        if (stop.route.id !== route.id) {
+        if(!RouteStop){
           throw new NotFoundException(
-            'La parada seleccionada no pertenece a la ruta indicada',
-          );
+            'la parada seleccionada no pertenece a la ruta indicada'
+          )
         }
       }
-    } else if (stop && stop.route.id !== route.id) {
-      throw new NotFoundException(
-        'La parada actual no pertenece a la nueva ruta seleccionada',
-      );
+    } else if (stop) {
+      const routeStop = await this.routeStopRepository.findOne({
+        where:{
+          route: {id: route.id},
+          stop: {id: stop.id},
+        },
+      });
+
+      if(!routeStop){
+        throw new NotFoundException(
+          'La parada actual no pertenece a la nueva ruta seleccionada'
+        )
+      }
     }
 
     Object.assign(incidence, {

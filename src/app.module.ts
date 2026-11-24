@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoutesModule } from './routes/routes.module.js';
 import { StopsModule } from './stops/stops.module.js';
 import { IncidencesModule } from './incidences/incidences.module.js';
+import { RouteStopsModule } from './route-stops/route-stops.module.js';
 
 @Module({
   imports: [
@@ -15,11 +16,6 @@ import { IncidencesModule } from './incidences/incidences.module.js';
       isGlobal: true,
       
     }),
-
-    StopsModule,
-    UsersModule,
-    AuthModule,
-    RoutesModule,
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -32,7 +28,7 @@ import { IncidencesModule } from './incidences/incidences.module.js';
         password: configService.getOrThrow<string>('DB_PASSWORD'),
         database: configService.getOrThrow<string>('DB_DATABASE'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
         ssl: {
           rejectUnauthorized: false,
         },
@@ -44,6 +40,10 @@ import { IncidencesModule } from './incidences/incidences.module.js';
     RoutesModule,
     StopsModule,
     IncidencesModule,
+    RouteStopsModule,
   ],
+
+  controllers:[AppController],
+  providers:[AppService],
 })
 export class AppModule {}

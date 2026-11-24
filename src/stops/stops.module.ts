@@ -7,9 +7,11 @@ import { Stop } from './entities/stop.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { RoutesModule } from '../routes/routes.module.js';
 import { Route } from '../routes/entities/route.entity.js';
+import { RouteStop } from '../route-stops/entities/route-stop.entity.js';
+
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Stop, Route]), AuthModule, RoutesModule],
+  imports: [TypeOrmModule.forFeature([Stop, Route, RouteStop]), AuthModule, RoutesModule],
   controllers: [StopsController],
   providers: [StopsService]
 })
