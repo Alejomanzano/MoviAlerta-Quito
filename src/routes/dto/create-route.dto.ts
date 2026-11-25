@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength, maxLength, Max } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, MaxLength, IsBoolean, IsInt, Min } from "class-validator";
 
 export class CreateRouteDto{
     @IsString({ message: 'El codigo debe ser un texto'})
@@ -14,4 +14,16 @@ export class CreateRouteDto{
     @IsOptional()
     @IsString({message: 'La descripcion debe ser un texto'})
     description?: string;
+
+    @IsOptional()
+    @IsBoolean({ message: 'El estado debe ser verdadero o falso'})
+    isActive?: boolean;
+
+    @IsInt({ message: 'El ID de la tura tiene que ser un numero entero'})
+    @Min(1, { message: 'El ID de la tura tine que ser mayor a cero'})
+    routeId!: number;
+
+    @IsInt({ message: 'La secuencia debe ser de un numero entero'})
+    @Min(1, {message: 'La secuende debe de ser mayor a cero'})
+    sequence!: number;
 }

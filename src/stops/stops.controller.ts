@@ -1,18 +1,8 @@
-
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  UseGuards,
-} from '@nestjs/common';
-
+import { Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,UseGuards,} from '@nestjs/common';
 import { StopsService } from './stops.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { CreateStopDto } from './dto/create-stop.dto.js';
+import { UpdateStopDto } from './dto/update-stop.dto.js';
 
 @Controller('stops')
 @UseGuards(JwtAuthGuard)
@@ -21,7 +11,7 @@ export class StopsController {
 
   // Crear una parada
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: CreateStopDto) {
     return this.stopsService.create(data);
   }
 
@@ -41,7 +31,7 @@ export class StopsController {
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: any,
+    @Body() data: UpdateStopDto,
   ) {
     return this.stopsService.update(id, data);
   }

@@ -115,69 +115,76 @@ export class StopsService {
   async update(id: number, data: any) {
     const stop = await this.findOne(id);
 
-    Object.assign(stop,{
-      name: data.name ?? stop.name,
-      address: data.address ?? stop.address,
-      isActive: data.isActive ?? stop.isActive,
-    });
+    let routeToAssociate: Route | null = null;
+    let sequence = 0;
 
-    await this.stopRepository.save(stop);
-
-    if (data.routeId !== undefined) {
+    //Validar la ruta antes de guardar cambios
+    if(data.routeId !== undefined){
       const route = await this.routeRepository.findOneBy({
         id: Number(data.routeId),
       });
 
-      if (!route) {
-        throw new NotFoundException('La ruta seleccionada no existe');
+      if(!route){
+      throw new NotFoundException(
+        'La ura seleccionada no existe'
+      );
+    }
+
+    const existingRelation = await this.routeStopRepository.findOne({
+      where: {
+        route: { id: route.id},
+        stop: {id: stop.id}
+      },
+    });
+
+    //Si la parada todavia no pertenece a esa ruta
+    if(!existingRelation){
+      sequence = Number(data.sequence);
+
+      if(!Number.isInteger(sequence) ||sequence < 1){
+        throw new BadRequestException(
+          'La secuencia debe ser un numero mayor a cero'
+        );
       }
 
-    
-      const existingRelation = await this.routeStopRepository.findOne({
+      const existingSequence = await this.routeStopRepository.findOne({
         where: {
-          route: {id: route.id},
-          stop: {id: stop.id},
+          route:{ id: route.id},
+          sequence,
         },
       });
 
-      if(!existingRelation){
-
-        const sequence = Number(data.sequence);
-
-        if(!Number.isInteger(sequence) || sequence < 1){
-          throw new BadRequestException(
-            'La secuencia debe ser un numero mayor a cero',
-          );
-        }
-        
-        const existingSequence = await this.routeStopRepository.findOne({
-          where: {
-            route: { id: route.id},
-            sequence,
-          },
-        });
-
-        if(existingSequence){
-          throw new ConflictException(
-            'Ya existe una parada en esta posicion de la ruta'
-          )
-
-        }
-        const routeStop = this.routeStopRepository.create({
-          route,
-          stop,
-          sequence,
-        });
-
-        await this.routeStopRepository.save(routeStop);
+      if(existingSequence){
+        throw new ConflictException(
+          'Ya existe una parada en esta posicion de la ruta',
+        );
       }
-    }
 
-    return await this.findOne(id);
-
-    
+      routeToAssociate = route;
+      }
   }
 
+  Object.assign(stop, {
+    name: data.name ?? stop.name, 
+    address: data.address ?? stop.address,
+    isActive: data.isActive ?? stop.isActive,
+  });
+
+  await this.stopRepository.save(stop);
+
+  if(routeToAssociate){
+    const routeStop = this.routeStopRepository.create({
+      route: routeToAssociate,
+      stop,
+      sequence,
+    });
+
+    await this.routeStopRepository.save(routeStop);
+  }
+
+  return await this.findOne(id);
+
+}
   // Eliminar una parada
   async remove(id: number) {
     const stop = await this.findOne(id);
