@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from "typeorm";
 
+import type { Relation } from "typeorm";
 import { Route } from "../../routes/entities/route.entity.js";
 import { Stop } from "../../stops/entities/stop.entity.js";
 
@@ -16,9 +17,9 @@ export class RouteStop{
 
     @ManyToOne(() => Route, { nullable: false, onDelete: 'CASCADE'})
     @JoinColumn({ name: 'routeId'})
-    route!: Route;
+    route!: Relation<Route>;
 
     @ManyToOne(() => Stop, { nullable: false, onDelete: 'RESTRICT'})
     @JoinColumn({ name: 'stopId'})
-    stop! : Stop;
+    stop! : Relation<Stop>;
 }

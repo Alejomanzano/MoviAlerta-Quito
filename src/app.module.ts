@@ -29,9 +29,9 @@ import { RouteStopsModule } from './route-stops/route-stops.module.js';
         database: configService.getOrThrow<string>('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: false,
-        ssl: {
+        ssl: configService.get<string>('DB_SSL') == 'true' ? {
           rejectUnauthorized: false,
-        },
+        } : false,
     }),
 }),
 
