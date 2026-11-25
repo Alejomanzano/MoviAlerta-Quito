@@ -29,11 +29,11 @@ export class RoutesController {
         @Param('id', ParseIntPipe) id: number,
         @Body() data: any,
     ){
-        return this.routesService.updtae(id, data);
+        return this.routesService.update(id, data);
     }
 
     @Delete(':id')
     remove(@Param('id', ParseIntPipe) id: number){
-        return this,this.routesService.remove(id);
+        return this.routesService.remove(id);
     }
 }

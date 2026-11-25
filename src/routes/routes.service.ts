@@ -40,7 +40,7 @@ export class RoutesService {
         return route;
     }
 
-    async updtae(id: number, data: Partial<Route>){
+    async update(id: number, data: Partial<Route>){
         const route = await this.findOne(id);
 
         if(data.code && data.code !== route.code){
@@ -55,7 +55,7 @@ export class RoutesService {
 
         Object.assign(route, data);
 
-        return await this,this.routeRepository.save(route);
+        return await this.routeRepository.save(route);
     }
 
     async remove(id:number){

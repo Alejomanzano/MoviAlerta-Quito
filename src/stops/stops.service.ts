@@ -36,6 +36,27 @@ export class StopsService {
       throw new NotFoundException('La ruta seleccionada no existe');
     }
 
+    const sequence = Number (data.sequence);
+    if(!Number.isInteger(sequence) || sequence < 1){
+      throw new BadRequestException(
+        'La secuencia debe ser un numero mayor a cero',
+      )
+    }
+
+    const existingSequence = await this.routeStopRepository.findOne({
+      where: {
+        route: {id: route.id},
+        sequence,
+      },
+    });
+
+    if(existingSequence){
+      throw new ConflictException(
+        'Ya existe una parada en esta posicion de la ruta',
+      );
+    }
+    
+
     const stop = this.stopRepository.create({
       name: data.name,
       address: data.address,
@@ -96,7 +117,7 @@ export class StopsService {
 
     Object.assign(stop,{
       name: data.name ?? stop.name,
-      address: data.adrress ?? stop.address,
+      address: data.address ?? stop.address,
       isActive: data.isActive ?? stop.isActive,
     });
 
@@ -111,6 +132,7 @@ export class StopsService {
         throw new NotFoundException('La ruta seleccionada no existe');
       }
 
+    
       const existingRelation = await this.routeStopRepository.findOne({
         where: {
           route: {id: route.id},
@@ -119,14 +141,15 @@ export class StopsService {
       });
 
       if(!existingRelation){
+
         const sequence = Number(data.sequence);
 
-        if(!Number.isInteger(sequence) || sequence<1){
+        if(!Number.isInteger(sequence) || sequence < 1){
           throw new BadRequestException(
-            'La secuencia debe ser un numero entero o mayor a cero',
+            'La secuencia debe ser un numero mayor a cero',
           );
         }
-
+        
         const existingSequence = await this.routeStopRepository.findOne({
           where: {
             route: { id: route.id},
