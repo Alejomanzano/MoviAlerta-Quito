@@ -144,7 +144,7 @@ export class IncidencesService {
           }
         })
 
-        if(!RouteStop){
+        if(!routeStop){
           throw new NotFoundException(
             'la parada seleccionada no pertenece a la ruta indicada'
           )
