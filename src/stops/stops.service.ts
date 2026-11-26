@@ -11,6 +11,8 @@ import { Repository } from 'typeorm';
 import { Stop } from './entities/stop.entity.js';
 import { Route } from '../routes/entities/route.entity.js';
 import { RouteStop } from '../route-stops/entities/route-stop.entity.js';
+import { CreateStopDto } from './dto/create-stop.dto.js';
+import { UpdateStopDto } from './dto/update-stop.dto.js';
 
 @Injectable()
 export class StopsService {
@@ -27,7 +29,7 @@ export class StopsService {
   ) {}
 
   // Crear una parada
-  async create(data: any) {
+  async create(data: CreateStopDto) {
     const route = await this.routeRepository.findOneBy({
       id: Number(data.routeId),
     });
@@ -112,7 +114,7 @@ export class StopsService {
   }
 
   // Actualizar una parada
-  async update(id: number, data: any) {
+  async update(id: number, data: UpdateStopDto) {
     const stop = await this.findOne(id);
 
     let routeToAssociate: Route | null = null;

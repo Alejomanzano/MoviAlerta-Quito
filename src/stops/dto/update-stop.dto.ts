@@ -27,7 +27,7 @@ export class UpdateStopDto{
     routeId?: number;
 
     @IsOptional()
-    @IsInt({message: 'El ID de la ruta debe ser un numero'})
-    @Min(1, {message: 'El ID de la ruta tiene que ser mayor a cero'})
+    @IsInt({message: 'La secuencia debe ser un numero entero'})
+    @Min(1, {message: 'La secuencia debe ser mayor a cero'})
     sequence?: number;
 }
