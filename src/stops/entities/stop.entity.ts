@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Route } from "../../routes/entities/route.entity.js";
 import { RouteStop } from "../../route-stops/entities/route-stop.entity.js";
 

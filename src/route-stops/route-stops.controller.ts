@@ -12,8 +12,8 @@ export class RouteStopsController {
 
     @Post()
     create(
-        @Body('routeid', ParseIntPipe) routeId: number,
-        @Body('stopid', ParseIntPipe) stopId: number,
+        @Body('routeId', ParseIntPipe) routeId: number,
+        @Body('stopId', ParseIntPipe) stopId: number,
         @Body('sequence', ParseIntPipe) sequence: number,
         
     ){
