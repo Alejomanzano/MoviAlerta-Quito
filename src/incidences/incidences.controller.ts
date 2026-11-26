@@ -1,18 +1,11 @@
-
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  UseGuards,
+import {Controller,Get,Post,Put,Delete,Body,Param,ParseIntPipe,UseGuards,
 } from '@nestjs/common';
 
 import { IncidencesService } from './incidences.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+
+import { CreateIncidenceDto } from './dto/create-incidence.dto.js';
+import { UpdateIncidenceDto } from './dto/update-incidence.dto.js';
 
 @Controller('incidences')
 @UseGuards(JwtAuthGuard)
@@ -23,7 +16,7 @@ export class IncidencesController {
 
   // Crear una incidencia
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: CreateIncidenceDto) {
     return this.incidencesService.create(data);
   }
 
@@ -43,7 +36,7 @@ export class IncidencesController {
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: any,
+    @Body() data: UpdateIncidenceDto,
   ) {
     return this.incidencesService.update(id, data);
   }

@@ -1,8 +1,4 @@
-
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,} from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,7 +8,8 @@ import { Route } from '../routes/entities/route.entity.js';
 import { Stop } from '../stops/entities/stop.entity.js';
 import { RouteStop } from '../route-stops/entities/route-stop.entity.js';
 
-
+import { CreateIncidenceDto } from './dto/create-incidence.dto.js';
+import { UpdateIncidenceDto } from './dto/update-incidence.dto.js';
 @Injectable()
 export class IncidencesService {
   constructor(
@@ -31,7 +28,7 @@ export class IncidencesService {
   ) {}
 
   // Crear una incidencia
-  async create(data: any) {
+  async create(data: CreateIncidenceDto) {
     const route = await this.routeRepository.findOneBy({
       id: Number(data.routeId),
     });
@@ -107,7 +104,7 @@ export class IncidencesService {
   }
 
   // Actualizar una incidencia
-  async update(id: number, data: any) {
+  async update(id: number, data: UpdateIncidenceDto) {
     const incidence = await this.findOne(id);
 
     const routeId =
