@@ -18,8 +18,8 @@ export class UpdateStopDto{
     description?: string;
 
     @IsOptional()
-    @IsString({ message: 'El estado debe ser verdadero o falso'})
-    isActive: boolean;
+    @IsBoolean({ message: 'El estado debe ser verdadero o falso'})
+    isActive?: boolean;
 
     @IsOptional()
     @IsInt({message: 'El ID de la ruta debe ser un numero'})

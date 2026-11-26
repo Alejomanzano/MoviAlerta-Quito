@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsInt, Min, MaxLength } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsInt, Min, MaxLength, IsIn } from "class-validator";
 
 export class UpdateIncidenceDto{
     @IsOptional()
@@ -16,7 +16,11 @@ export class UpdateIncidenceDto{
     @IsString({message: 'La gravedad debe ser un texto'})
     @IsNotEmpty({ message: 'La gravedad no puede estar vacia'})
     @MaxLength(20,{ message: 'La gravedad no puede superar los 20 caracteres',})
+    @IsIn(['Baja', 'Media', 'Alta'], {
+    message: 'La gravedad debe ser Baja, Media o Alta'})
     severity?: string;
+
+
 
     @IsOptional()
     @IsBoolean({ message: 'El estado debe ser verdadero o falso' })
