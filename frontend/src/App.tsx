@@ -102,29 +102,31 @@ type NewsItem = {
   text: string;
 };
 
+
 const features = [
   {
     icon: MapIcon,
     tone: "blue",
-    title: "Accurate Routes",
-    text: "Explore all 15+ urban lines and their designated stops across the city.",
-    link: "Find your route",
-  },
-  {
-    icon: Clock,
-    tone: "yellow",
-    title: "Live Timetable",
-    text: "Real-time arrival and departure information for every bus stop in Prishtina.",
-    link: "Check times",
+    title: "Planifica tu viaje",
+    text: "Encuentra opciones para desplazarte por Quito indicando tu origen y destino.",
+    link: "Planificar mi viaje",
   },
   {
     icon: Bell,
     tone: "red",
-    title: "Service Alerts",
-    text: "Stay informed about delays, route changes, or maintenance updates.",
-    link: "See latest alerts",
+    title: "Consulta incidencias",
+    text: "Revisa las incidencias reportadas sobre el servicio de transporte público.",
+    link: "Ver incidencias",
+  },
+  {
+    icon: TriangleAlert,
+    tone: "yellow",
+    title: "Reporta una incidencia",
+    text: "Comunica problemas relacionados con las rutas, paradas o el servicio de transporte.",
+    link: "Reportar incidencia",
   },
 ];
+
 
 const lines: Line[] = [
   {
@@ -194,7 +196,9 @@ function Logo({ variant }: { variant: "header" | "footer" }) {
         <Bus size={variant === "header" ? 22 : 26} strokeWidth={2} />
       </span>
       <span className="logo__text">
-        Prishtina<span className="logo__accent">Bus</span>
+        <span className="logo__mov i">Movi</span>{" "}
+        <span className="logo__alerta">Alerta</span>{" "}
+        <span className="logo__quito">Quito</span>
       </span>
     </a>
   );
@@ -208,36 +212,50 @@ export default function App() {
         <div className="container navbar__inner">
           <Logo variant="header" />
           <nav className="navbar__nav">
-            <a href="#routes">Routes</a>
-            <a href="#timetable">Timetable</a>
-            <a href="#map">Map</a>
-            <a href="#news">News</a>
+            <a href="#inicio">Inicio</a>
+            <a href="#planificar">Planificar viaje</a>
+            <a href="#incidencias">Incidencias</a>
+            <a href="#nosotros">Nosotros</a>
             <span className="navbar__divider" />
-            <a href="#login" className="navbar__login">Log in</a>
-            <a href="#signup" className="btn btn--sm btn--primary">Sign up</a>
+            <a href="#administracion" className="navbar__login">
+              Administración
+            </a>
           </nav>
         </div>
       </header>
 
       {/* HERO */}
       <section className="hero">
-        <div className="container hero__inner">
-          <span className="hero__badge">LIVE URBAN TRANSPORT</span>
+        <div className="container hero__inner" id="inicio">
+          <span className="hero__badge">
+            <span className="badge__blue">MOVILIDAD URBANA</span>
+            <span className="badge__red">DE</span>
+            <span className="badge__blue">QUITO</span>
+          </span>
+
           <h1 className="hero__title">
-            Travel Through <span className="hero__title-accent">Prishtina</span>
+            Muévete por{" "}
+            <span className="hero__title-accent">
+              <span className="quito__blue">Qu</span>
+              <span className="quito__red">it</span>
+              <span className="quito__blue">o</span>
+            </span>
             <br />
-            with Confidence
+            de forma más informada
           </h1>
+
           <p className="hero__text">
-            Get real-time updates, accurate bus schedules, and route maps for the
-            capital's urban transport system.
+            Planifica tus viajes, consulta incidencias del transporte público
+            y comparte información que ayude a mejorar la movilidad en la ciudad.
           </p>
+
           <div className="hero__actions">
-            <a href="#routes" className="btn btn--lg btn--primary btn--glow">
-              Explore Routes <ArrowRight size={20} />
+            <a href="#planificar" className="btn btn--lg btn--primary btn--glow">
+              Planificar mi viaje <ArrowRight size={20} />
             </a>
-            <a href="#map" className="btn btn--lg btn--ghost">
-              View Live Map
+
+            <a href="#incidencias" className="btn btn--lg btn--red">
+              Consultar incidencias
             </a>
           </div>
         </div>
@@ -262,112 +280,126 @@ export default function App() {
       </section>
 
       {/* POPULAR LINES + NEWS */}
-      <section className="content">
-        <div className="container content__grid">
-          <div id="routes">
-            <div className="section-head">
-              <h2>
-                <Bus size={22} className="section-head__icon" /> Popular Lines
-              </h2>
-              <a href="#routes" className="section-head__link">View all</a>
-            </div>
-            <div className="stack">
-              {lines.map((line) => (
-                <article className={`line-card line-card--${line.accent}`} key={line.number}>
-                  <span className="line-card__number">{line.number}</span>
-                  <div className="line-card__info">
-                    <h3>{line.name}</h3>
-                    <p>
-                      {line.from} → {line.to}
-                    </p>
-                  </div>
-                  {line.status === "on-time" ? (
-                    <span className="status status--ok">
-                      <CircleCheck size={14} /> On Time
-                    </span>
-                  ) : (
-                    <span className="status status--warn">
-                      <TriangleAlert size={14} /> Delayed
-                    </span>
-                  )}
-                </article>
-              ))}
-            </div>
-          </div>
+      {/* INFORMACIÓN DEL SISTEMA */}
+        <section className="content" id="nosotros">
+          <div className="container content__grid">
+            <div id="planificar">
+              <div className="section-head">
+                <h2>
+                  <MapIcon size={22} className="section-head__icon" />
+                  Planifica tu recorrido
+                </h2>
+              </div>
 
-          <div id="news">
-            <div className="section-head">
-              <h2>
-                <Info size={22} className="section-head__icon" /> News &amp; Updates
-              </h2>
-              <a href="#news" className="section-head__link">Read all</a>
-            </div>
-            <div className="stack">
-              {news.map((item) => (
-                <article className="news-card" key={item.title}>
-                  <div className="news-card__top">
-                    <span className={`tag tag--${item.tag.toLowerCase()}`}>{item.tag}</span>
-                    <time>{item.date}</time>
+              <div className="stack">
+                <article className="line-card line-card--blue">
+                  <span className="line-card__number">
+                    <MapIcon size={22} />
+                  </span>
+                  <div className="line-card__info">
+                    <h3>Selecciona tu origen y destino</h3>
+                    <p>Indica desde dónde sales y hacia dónde deseas llegar.</p>
                   </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
                 </article>
-              ))}
+
+                <article className="line-card line-card--yellow">
+                  <span className="line-card__number">
+                    <Bus size={22} />
+                  </span>
+                  <div className="line-card__info">
+                    <h3>Consulta alternativas de viaje</h3>
+                    <p>El sistema permitirá consultar opciones de recorrido y conexiones.</p>
+                  </div>
+                </article>
+
+                <article className="line-card line-card--blue">
+                  <span className="line-card__number">
+                    <CircleCheck size={22} />
+                  </span>
+                  <div className="line-card__info">
+                    <h3>Elige tu recorrido</h3>
+                    <p>Compara las alternativas disponibles para organizar tu viaje.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div id="incidencias">
+              <div className="section-head">
+                <h2>
+                  <Info size={22} className="section-head__icon" />
+                  Información de la comunidad
+                </h2>
+              </div>
+
+              <div className="stack">
+                <article className="news-card">
+                  <div className="news-card__top">
+                    <span className="tag tag--news">COMUNIDAD</span>
+                  </div>
+                  <h3>Consulta incidencias</h3>
+                  <p>
+                    Revisa los reportes relacionados con rutas, paradas y el servicio
+                    de transporte público.
+                  </p>
+                </article>
+
+                <article className="news-card">
+                  <div className="news-card__top">
+                    <span className="tag tag--delay">PARTICIPACIÓN</span>
+                  </div>
+                  <h3>Comparte información</h3>
+                  <p>
+                    Reporta problemas del transporte para mantener informada a la
+                    comunidad.
+                  </p>
+                </article>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* CTA BAND (franja azul visible entre el contenido y el footer) */}
-      <section className="cta">
-        <div className="container cta__inner">
-          <h2>Plan your next trip</h2>
-          <a href="#routes" className="btn btn--lg btn--yellow">
-            Explore Routes <ArrowRight size={20} />
-          </a>
-        </div>
-      </section>
+      
 
+      
       {/* FOOTER */}
       <footer className="footer">
         <div className="container footer__grid">
           <div className="footer__brand">
             <Logo variant="footer" />
             <p>
-              Reliable urban transport information for Prishtina. Real-time updates,
-              accurate routes, and easy planning for your daily commute.
+              MoviAlerta Quito facilita la consulta de información del transporte
+              público, la planificación de viajes y el reporte de incidencias
+              para contribuir a una movilidad mejor informada.
             </p>
           </div>
 
           <div>
-            <h4>Quick Links</h4>
+            <h4>Explora</h4>
             <ul>
-              <li><a href="#routes">Routes</a></li>
-              <li><a href="#timetable">Timetables</a></li>
-              <li><a href="#map">Map</a></li>
-              <li><a href="#news">News &amp; Alerts</a></li>
+              <li><a href="#inicio">Inicio</a></li>
+              <li><a href="#planificar">Planificar viaje</a></li>
+              <li><a href="#incidencias">Incidencias</a></li>
+              <li><a href="#nosotros">Cómo funciona</a></li>
             </ul>
           </div>
 
           <div>
-            <h4>Contact</h4>
+            <h4>Participa</h4>
             <ul>
-              <li>Trafiku Urban Prishtinë</li>
-              <li>Rr. Tahir Zajmi, Prishtinë</li>
-              <li>+383 38 123 456</li>
+              <li><a href="#incidencias">Consultar incidencias</a></li>
+              <li><a href="#incidencias">Reportar una incidencia</a></li>
+              <li><a href="#administracion">Administración</a></li>
             </ul>
-            <div className="footer__social">
-              <a href="#twitter" aria-label="Twitter"><TwitterIcon /></a>
-              <a href="#facebook" aria-label="Facebook"><FacebookIcon /></a>
-              <a href="#github" aria-label="GitHub"><GithubIcon /></a>
-            </div>
           </div>
         </div>
 
         <div className="container footer__bottom">
-          © 2026 Prishtina Bus Dashboard. All rights reserved.
+          © 2026 MoviAlerta Quito. Proyecto académico.
         </div>
       </footer>
+
     </div>
   );
 }

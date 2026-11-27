@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoviAlerta Quito | Portal ciudadano</title>
+  <link rel="stylesheet" href="css/usuario.css">
+</head>
+<body>
+  <header class="navbar">
+    <a class="logo" href="usuario.html">
+      <span>Movi</span><span class="rojo">Alerta</span><span> Quito</span>
+    </a>
+    <nav>
+      <a href="#inicio">Inicio</a>
+      <a href="#planificar">Planificar</a>
+      <a href="#rutas">Rutas</a>
+      <a href="#incidencias">Incidencias</a>
+      <a href="#reportar">Reportar</a>
+    </nav>
+    <a class="btn-salir" href="index.html">Salir</a>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="hero-contenido">
+        <span class="etiqueta">MOVILIDAD URBANA DE QUITO</span>
+        <h1>Muévete por Quito<br>con más información.</h1>
+        <p>
+          Consulta rutas, conoce sus paradas y mantente informado
+          sobre las incidencias del transporte.
+        </p>
+        <a href="#planificar" class="btn-principal">Planificar mi viaje</a>
+      </div>
+    </section>
+
+    <section class="contenedor bienvenida">
+      <h2>Bienvenido a MoviAlerta Quito</h2>
+      <p>¿Qué necesitas hacer hoy?</p>
+
+      <div class="accesos-rapidos">
+        <a href="#planificar" class="opcion">
+          <span class="opcion-icono">🚌</span>
+          <h3>Planificar viaje</h3>
+          <p>Consulta las paradas de una ruta.</p>
+        </a>
+        <a href="#rutas" class="opcion">
+          <span class="opcion-icono">📍</span>
+          <h3>Consultar rutas</h3>
+          <p>Conoce las rutas y sus paradas.</p>
+        </a>
+        <a href="#incidencias" class="opcion">
+          <span class="opcion-icono">⚠️</span>
+          <h3>Ver incidencias</h3>
+          <p>Revisa los reportes registrados.</p>
+        </a>
+        <a href="#reportar" class="opcion">
+          <span class="opcion-icono">📝</span>
+          <h3>Reportar problema</h3>
+          <p>Ayuda a informar sobre problemas.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="seccion fondo-claro" id="planificar">
+      <div class="contenedor">
+        <div class="encabezado-seccion">
+          <span class="etiqueta">PLANIFICA</span>
+          <h2>Consulta tu recorrido</h2>
+          <p>Selecciona una ruta para conocer las paradas que forman parte de ella.</p>
+        </div>
+
+        <div class="panel">
+          <label for="rutaPlanificar">Selecciona una ruta</label>
+          <select id="rutaPlanificar">
+            <option value="">Cargando rutas...</option>
+          </select>
+          <div id="resultadoPlanificacion" class="resultado">
+            Selecciona una ruta para consultar sus paradas.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" id="rutas">
+      <div class="contenedor">
+        <div class="encabezado-seccion">
+          <span class="etiqueta">TRANSPORTE</span>
+          <h2>Rutas disponibles</h2>
+          <p>Consulta las rutas registradas en el sistema.</p>
+        </div>
+        <div id="listaRutas" class="tarjetas">
+          <p class="estado">Cargando rutas...</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion fondo-claro" id="incidencias">
+      <div class="contenedor">
+        <div class="encabezado-seccion">
+          <span class="etiqueta">INFORMACIÓN CIUDADANA</span>
+          <h2>Incidencias reportadas</h2>
+          <p>Conoce los problemas de movilidad registrados.</p>
+        </div>
+        <div id="listaIncidencias" class="tarjetas">
+          <p class="estado">Cargando incidencias...</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" id="reportar">
+      <div class="contenedor">
+        <div class="encabezado-seccion">
+          <span class="etiqueta">PARTICIPA</span>
+          <h2>Reportar una incidencia</h2>
+          <p>Tu reporte puede ayudar a otros ciudadanos.</p>
+        </div>
+
+        <form id="formReporte" class="panel formulario">
+          <div class="campo">
+            <label for="rutaReporte">Ruta</label>
+            <select id="rutaReporte" required>
+              <option value="">Selecciona una ruta</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="paradaReporte">Parada</label>
+            <select id="paradaReporte" required disabled>
+              <option value="">Primero selecciona una ruta</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="tipoReporte">Tipo de incidencia</label>
+            <select id="tipoReporte" required>
+              <option value="">Selecciona el tipo</option>
+              <option value="Retraso">Retraso</option>
+              <option value="Accidente">Accidente</option>
+              <option value="Servicio suspendido">Servicio suspendido</option>
+              <option value="Problema en parada">Problema en parada</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="gravedadReporte">Gravedad</label>
+            <select id="gravedadReporte" required>
+              <option value="">Selecciona la gravedad</option>
+              <option value="Baja">Baja</option>
+              <option value="Media">Media</option>
+              <option value="Alta">Alta</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="descripcionReporte">Descripción</label>
+            <textarea id="descripcionReporte" rows="4"
+              placeholder="Describe lo que está ocurriendo..." required></textarea>
+          </div>
+
+          <button class="btn-principal" type="submit">Enviar reporte</button>
+          <p id="mensajeReporte" class="mensaje"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="logo"><span>Movi</span><span class="rojo">Alerta</span><span> Quito</span></div>
+    <p>Información para una mejor movilidad urbana.</p>
+    <p class="copyright">© 2026 MoviAlerta Quito</p>
+  </footer>
+
+  <script src="js/usuario.js"></script>
+</body>
+</html>

@@ -1,172 +1,640 @@
 
-const API = "https://movialerta-quito.onrender.com";
+/* ==========================================
+   MOVIALERTA QUITO
+   JavaScript del panel
+========================================== */
 
+// Backend local
+const API = "http://localhost:3000";
+
+// Estado de la aplicación
 let token = "";
 
-const login = document.getElementById("login");
-const administracion = document.getElementById("administracion");
-const mensaje = document.getElementById("mensaje");
-const selectorRuta = document.getElementById("ruta");
-const selectorParada = document.getElementById("parada");
+let rutas = [];
+let paradas = [];
+let incidencias = [];
+let conexiones = [];
+
+// Acceso rápido a elementos HTML
+const $ = (id) => document.getElementById(id);
+
+// Pantallas
+const pantallaAccesos = $("login");
+const pantallaAdministrador = $("loginAdministrador");
+const pantallaUsuario = $("loginUsuario");
+const panelAdministracion = $("administracion");
+
+const mensaje = $("mensaje");
+
+// ==========================================
+// UTILIDADES
+// ==========================================
+
+function escapar(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caracter => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[caracter]);
+}
+
+function mostrarMensaje(texto, error = false) {
+    mensaje.textContent = texto;
+    mensaje.style.color = error ? "#e52535" : "#087443";
+}
+
+function mostrarErrorLogin(texto) {
+    let elemento = $("mensajeLogin");
+
+    if (!elemento) {
+        elemento = document.createElement("p");
+        elemento.id = "mensajeLogin";
+        elemento.style.marginTop = "15px";
+        elemento.style.fontWeight = "600";
+        elemento.style.fontSize = "13px";
+
+        $("formLogin").appendChild(elemento);
+    }
+
+    elemento.textContent = texto;
+    elemento.style.color = "#e52535";
+}
+
+function limpiarErrorLogin() {
+    const elemento = $("mensajeLogin");
+
+    if (elemento) {
+        elemento.textContent = "";
+    }
+}
+
+// ==========================================
+// PETICIONES AL BACKEND
+// ==========================================
 
 async function peticion(url, opciones = {}) {
-    const respuesta = await fetch(API + url, {
+    const respuesta = await fetch(`${API}${url}`, {
         ...opciones,
         headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(opciones.body ? {
+                "Content-Type": "application/json"
+            } : {}),
+            ...(token ? {
+                Authorization: `Bearer ${token}`
+            } : {}),
             ...opciones.headers
         }
     });
 
-    const datos = await respuesta.json();
+    const datos = await respuesta.json().catch(() => ({}));
 
     if (!respuesta.ok) {
-        throw new Error(datos.message || "Error en la solicitud");
+        const detalle = Array.isArray(datos.message)
+            ? datos.message.join(", ")
+            : datos.message;
+
+        throw new Error(detalle || `Error HTTP ${respuesta.status}`);
     }
 
     return datos;
 }
 
-function mostrarMensaje(texto, error = false) {
-    mensaje.textContent = texto;
-    mensaje.style.color = error ? "red" : "green";
-}
+// ==========================================
+// CAMBIAR ENTRE ACCESOS
+// ==========================================
 
-// INICIAR SESIÓN
-document.getElementById("btnLogin").addEventListener("click", async () => {
+$("btnAdministrador").addEventListener("click", () => {
+    pantallaAccesos.hidden = true;
+    pantallaAdministrador.hidden = false;
+});
+
+$("btnUsuario").addEventListener("click", () => {
+    pantallaAccesos.hidden = true;
+    pantallaUsuario.hidden = false;
+});
+
+$("volverAccesos").addEventListener("click", () => {
+    pantallaAdministrador.hidden = true;
+    pantallaAccesos.hidden = false;
+    limpiarErrorLogin();
+});
+
+$("volverAccesosUsuario").addEventListener("click", () => {
+    pantallaUsuario.hidden = true;
+    pantallaAccesos.hidden = false;
+});
+
+// ==========================================
+// PORTAL DE USUARIO PROVISIONAL
+// ==========================================
+
+$("btnEntrarUsuario").addEventListener("click", () => {
+    window.location.href = "usuario.html"
+    let aviso = $("avisoUsuario");
+
+    if (!aviso) {
+        aviso = document.createElement("p");
+        aviso.id = "avisoUsuario";
+        aviso.style.marginTop = "20px";
+        aviso.style.fontWeight = "600";
+
+        $("btnEntrarUsuario").after(aviso);
+    }
+
+    aviso.textContent =
+        "El portal de usuario se encuentra en desarrollo.";
+
+    aviso.style.color = "#0756a8";
+});
+
+// ==========================================
+// INICIAR SESIÓN ADMINISTRADOR
+// ==========================================
+
+$("formLogin").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    limpiarErrorLogin();
+
+    const email = $("email").value.trim();
+    const password = $("password").value;
+
     try {
         const resultado = await peticion("/auth/login", {
             method: "POST",
             body: JSON.stringify({
-                email: document.getElementById("email").value,
-                password: document.getElementById("password").value
+                email,
+                password
             })
         });
 
         token = resultado.access_token;
 
-        await cargarRutas();
+        if (!token) {
+            throw new Error("El servidor no devolvió un token de acceso.");
+        }
 
-        login.hidden = true;
-        administracion.hidden = false;
+        // Cargar información protegida
+        await cargarTodo();
 
-        mostrarMensaje("Sesión iniciada correctamente.");
+        pantallaAdministrador.hidden = true;
+        panelAdministracion.hidden = false;
+
+        mostrarMensaje("Bienvenido al panel de administración.");
 
     } catch (error) {
-        mostrarMensaje(error.message, true);
+        token = "";
+
+        mostrarErrorLogin(
+            error.message || "No fue posible iniciar sesión."
+        );
     }
 });
 
-// CARGAR RUTAS
-async function cargarRutas() {
-    const rutas = await peticion("/routes");
+// ==========================================
+// CARGAR INFORMACIÓN DEL SISTEMA
+// ==========================================
 
-    selectorRuta.innerHTML =
-        '<option value="">Selecciona una ruta</option>';
+async function cargarTodo() {
+    const resultados = await Promise.all([
+        peticion("/routes"),
+        peticion("/stops"),
+        peticion("/incidences")
+    ]);
 
-    rutas.forEach(ruta => {
+    rutas = Array.isArray(resultados[0]) ? resultados[0] : [];
+    paradas = Array.isArray(resultados[1]) ? resultados[1] : [];
+    incidencias = Array.isArray(resultados[2]) ? resultados[2] : [];
+
+    actualizarIndicadores();
+    actualizarSelectores();
+
+    mostrarRutas();
+    mostrarParadas();
+    mostrarIncidencias();
+
+    await cargarConexiones();
+}
+
+// ==========================================
+// INDICADORES DEL PANEL
+// ==========================================
+
+function actualizarIndicadores() {
+    $("totalRutas").textContent = rutas.length;
+    $("totalParadas").textContent = paradas.length;
+    $("totalIncidencias").textContent = incidencias.length;
+}
+
+// ==========================================
+// SELECTORES
+// ==========================================
+
+function llenarSelect(selector, elementos, textoInicial, obtenerNombre) {
+    selector.innerHTML = "";
+
+    const inicial = document.createElement("option");
+    inicial.value = "";
+    inicial.textContent = textoInicial;
+
+    selector.appendChild(inicial);
+
+    elementos.forEach(elemento => {
         const opcion = document.createElement("option");
 
-        opcion.value = ruta.id;
-        opcion.textContent = `${ruta.code} - ${ruta.name}`;
+        opcion.value = elemento.id;
+        opcion.textContent = obtenerNombre(elemento);
 
-        selectorRuta.appendChild(opcion);
+        selector.appendChild(opcion);
     });
 }
 
-// CARGAR PARADAS DEPENDIENDO DE LA RUTA
-selectorRuta.addEventListener("change", async () => {
-    const rutaId = selectorRuta.value;
+function actualizarSelectores() {
+    llenarSelect(
+        $("rutaParada"),
+        rutas,
+        "Selecciona una ruta",
+        ruta => `${ruta.code} - ${ruta.name}`
+    );
 
-    selectorParada.innerHTML =
-        '<option value="">Selecciona una parada</option>';
+    llenarSelect(
+        $("rutaConexion"),
+        rutas,
+        "Selecciona una ruta",
+        ruta => `${ruta.code} - ${ruta.name}`
+    );
 
-    selectorParada.disabled = true;
+    llenarSelect(
+        $("rutaIncidencia"),
+        rutas,
+        "Selecciona una ruta",
+        ruta => `${ruta.code} - ${ruta.name}`
+    );
 
-    if (!rutaId) return;
+    llenarSelect(
+        $("paradaConexion"),
+        [],
+        "Primero selecciona una ruta",
+        parada => parada.name
+    );
+
+    llenarSelect(
+        $("paradaIncidencia"),
+        [],
+        "Primero selecciona una ruta",
+        parada => parada.name
+    );
+}
+
+// ==========================================
+// RUTAS
+// ==========================================
+
+function mostrarRutas() {
+    const contenedor = $("listaRutas");
+
+    if (rutas.length === 0) {
+        contenedor.innerHTML = "<p>No hay rutas registradas.</p>";
+        return;
+    }
+
+    contenedor.innerHTML = rutas.map(ruta => `
+        <div class="item">
+            <strong>
+                ${escapar(ruta.code)} - ${escapar(ruta.name)}
+            </strong>
+
+            <p>
+                ${escapar(ruta.description || "Sin descripción")}
+            </p>
+
+            <small>
+                ID: ${escapar(ruta.id)} |
+                Estado: ${ruta.isActive ? "Activa" : "Inactiva"}
+            </small>
+        </div>
+    `).join("");
+}
+
+$("formRuta").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
 
     try {
-        const paradas = await peticion("/stops");
-
-        const filtradas = paradas.filter(parada =>
-            Number(parada.route?.id) === Number(rutaId)
-        );
-
-        filtradas.forEach(parada => {
-            const opcion = document.createElement("option");
-
-            opcion.value = parada.id;
-            opcion.textContent = parada.name;
-
-            selectorParada.appendChild(opcion);
+        await peticion("/routes", {
+            method: "POST",
+            body: JSON.stringify({
+                code: $("codigoRuta").value.trim(),
+                name: $("nombreRuta").value.trim()
+            })
         });
 
-        if (filtradas.length > 0) {
-            selectorParada.disabled = false;
-        } else {
-            selectorParada.innerHTML =
-                '<option value="">Esta ruta no tiene paradas</option>';
-        }
+        $("formRuta").reset();
+
+        await cargarTodo();
+
+        mostrarMensaje("Ruta registrada correctamente.");
 
     } catch (error) {
         mostrarMensaje(error.message, true);
     }
 });
 
-// REGISTRAR INCIDENCIA
-document.getElementById("formIncidencia")
-    .addEventListener("submit", async (evento) => {
+// ==========================================
+// PARADAS
+// ==========================================
 
-        evento.preventDefault();
+function mostrarParadas() {
+    const contenedor = $("listaParadas");
 
-        const rutaId = selectorRuta.value;
-        const paradaId = selectorParada.value;
-        const descripcion = document.getElementById("descripcion").value.trim();
+    if (paradas.length === 0) {
+        contenedor.innerHTML = "<p>No hay paradas registradas.</p>";
+        return;
+    }
 
-        if (!rutaId || !paradaId || !descripcion) {
-            mostrarMensaje("Completa todos los campos.", true);
-            return;
-        }
+    contenedor.innerHTML = paradas.map(parada => {
+        const nombresRutas = (parada.routeStops || [])
+            .map(relacion => relacion.route?.code)
+            .filter(Boolean)
+            .join(", ");
 
-        try {
-            const resultado = await peticion("/incidences", {
-                method: "POST",
-                body: JSON.stringify({
-                    type: document.getElementById("tipo").value,
-                    description: descripcion,
-                    severity: document.getElementById("severidad").value,
-                    isActive: true,
-                    routeId: Number(rutaId),
-                    stopId: Number(paradaId)
-                })
-            });
+        return `
+            <div class="item">
+                <strong>${escapar(parada.name)}</strong>
 
-            mostrarMensaje(
-                `Incidencia registrada correctamente. ID: ${resultado.id}`
-            );
+                <p>${escapar(parada.address)}</p>
 
-            document.getElementById("formIncidencia").reset();
+                <small>
+                    Rutas: ${escapar(nombresRutas || "Sin asociación")}
+                </small>
 
-            selectorParada.disabled = true;
-            selectorParada.innerHTML =
-                '<option value="">Primero selecciona una ruta</option>';
+                <br>
 
-        } catch (error) {
-            mostrarMensaje(error.message, true);
-        }
-    });
+                <small>
+                    ID: ${escapar(parada.id)} |
+                    Estado: ${parada.isActive ? "Activa" : "Inactiva"}
+                </small>
+            </div>
+        `;
+    }).join("");
+}
 
+$("formParada").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    try {
+        await peticion("/stops", {
+            method: "POST",
+            body: JSON.stringify({
+                name: $("nombreParada").value.trim(),
+                address: $("direccionParada").value.trim(),
+                description: $("descripcionParada").value.trim(),
+                routeId: Number($("rutaParada").value),
+                sequence: Number($("secuenciaParada").value)
+            })
+        });
+
+        $("formParada").reset();
+
+        await cargarTodo();
+
+        mostrarMensaje("Parada registrada correctamente.");
+
+    } catch (error) {
+        mostrarMensaje(error.message, true);
+    }
+});
+
+// ==========================================
+// CONEXIONES ENTRE RUTAS Y PARADAS
+// ==========================================
+
+function obtenerRutaId(relacion) {
+    return Number(
+        relacion.route?.id ??
+        relacion.routeId ??
+        relacion.route_id
+    );
+}
+
+function obtenerParadasDeRuta(rutaId) {
+    return paradas.filter(parada =>
+        (parada.routeStops || []).some(
+            relacion => obtenerRutaId(relacion) === rutaId
+        )
+    );
+}
+
+$("rutaConexion").addEventListener("change", () => {
+    const rutaId = Number($("rutaConexion").value);
+
+    if (!rutaId) {
+        llenarSelect(
+            $("paradaConexion"),
+            [],
+            "Primero selecciona una ruta",
+            parada => parada.name
+        );
+        return;
+    }
+
+    const asociadas = obtenerParadasDeRuta(rutaId);
+
+    const disponibles = paradas.filter(parada =>
+        !asociadas.some(asociada => asociada.id === parada.id)
+    );
+
+    llenarSelect(
+        $("paradaConexion"),
+        disponibles,
+        disponibles.length
+            ? "Selecciona una parada"
+            : "No hay paradas disponibles",
+        parada => parada.name
+    );
+});
+
+$("formConexion").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    try {
+        await peticion("/route-stops", {
+            method: "POST",
+            body: JSON.stringify({
+                routeId: Number($("rutaConexion").value),
+                stopId: Number($("paradaConexion").value),
+                sequence: Number($("secuenciaConexion").value)
+            })
+        });
+
+        $("formConexion").reset();
+
+        await cargarTodo();
+
+        mostrarMensaje("Conexión registrada correctamente.");
+
+    } catch (error) {
+        mostrarMensaje(error.message, true);
+    }
+});
+
+// Consultar las conexiones registradas por ruta
+async function cargarConexiones() {
+    conexiones = [];
+
+    try {
+        const resultados = await Promise.all(
+            rutas.map(async ruta => {
+                const datos = await peticion(
+                    `/route-stops/route/${ruta.id}`
+                );
+
+                return (Array.isArray(datos) ? datos : []).map(conexion => ({
+                    ...conexion,
+                    ruta
+                }));
+            })
+        );
+
+        conexiones = resultados.flat();
+
+        mostrarConexiones();
+
+    } catch (error) {
+        $("listaConexiones").innerHTML =
+            `<p>No se pudieron consultar las conexiones: ${escapar(error.message)}</p>`;
+    }
+}
+
+function mostrarConexiones() {
+    const contenedor = $("listaConexiones");
+
+    if (conexiones.length === 0) {
+        contenedor.innerHTML = "<p>No hay conexiones registradas.</p>";
+        return;
+    }
+
+    contenedor.innerHTML = conexiones.map(conexion => `
+        <div class="item">
+            <strong>
+                ${escapar(conexion.ruta?.code)} -
+                ${escapar(conexion.ruta?.name)}
+            </strong>
+
+            <p>
+                Parada:
+                ${escapar(conexion.stop?.name || "Parada no disponible")}
+            </p>
+
+            <small>
+                Orden: ${escapar(conexion.sequence)}
+            </small>
+        </div>
+    `).join("");
+}
+
+// ==========================================
+// INCIDENCIAS
+// ==========================================
+
+$("rutaIncidencia").addEventListener("change", () => {
+    const rutaId = Number($("rutaIncidencia").value);
+
+    if (!rutaId) {
+        llenarSelect(
+            $("paradaIncidencia"),
+            [],
+            "Primero selecciona una ruta",
+            parada => parada.name
+        );
+        return;
+    }
+
+    const asociadas = obtenerParadasDeRuta(rutaId);
+
+    llenarSelect(
+        $("paradaIncidencia"),
+        asociadas,
+        asociadas.length
+            ? "Selecciona una parada"
+            : "Esta ruta no tiene paradas",
+        parada => parada.name
+    );
+});
+
+function mostrarIncidencias() {
+    const contenedor = $("listaIncidencias");
+
+    if (incidencias.length === 0) {
+        contenedor.innerHTML = "<p>No hay incidencias registradas.</p>";
+        return;
+    }
+
+    contenedor.innerHTML = incidencias.map(incidencia => `
+        <div class="item">
+            <strong>${escapar(incidencia.type)}</strong>
+
+            <p>${escapar(incidencia.description)}</p>
+
+            <small>
+                Ruta: ${escapar(incidencia.route?.code || "Sin ruta")} |
+                Parada: ${escapar(incidencia.stop?.name || "Sin parada")}
+            </small>
+
+            <br>
+
+            <small>
+                Severidad: ${escapar(incidencia.severity)} |
+                Estado: ${incidencia.isActive ? "Activa" : "Inactiva"}
+            </small>
+        </div>
+    `).join("");
+}
+
+$("formIncidencia").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    try {
+        await peticion("/incidences", {
+            method: "POST",
+            body: JSON.stringify({
+                type: $("tipoIncidencia").value.trim(),
+                description: $("descripcionIncidencia").value.trim(),
+                severity: $("severidadIncidencia").value,
+                isActive: true,
+                routeId: Number($("rutaIncidencia").value),
+                stopId: Number($("paradaIncidencia").value)
+            })
+        });
+
+        $("formIncidencia").reset();
+
+        await cargarTodo();
+
+        mostrarMensaje("Incidencia registrada correctamente.");
+
+    } catch (error) {
+        mostrarMensaje(error.message, true);
+    }
+});
+
+// ==========================================
 // CERRAR SESIÓN
-document.getElementById("btnCerrarSesion")
-    .addEventListener("click", () => {
+// ==========================================
 
-        token = "";
+$("btnCerrarSesion").addEventListener("click", () => {
+    token = "";
 
-        login.hidden = false;
-        administracion.hidden = true;
+    rutas = [];
+    paradas = [];
+    incidencias = [];
+    conexiones = [];
 
-        document.getElementById("password").value = "";
+    panelAdministracion.hidden = true;
+    pantallaAccesos.hidden = false;
 
-        mostrarMensaje("Sesión cerrada.");
-    });
+    $("formLogin").reset();
+
+    mostrarMensaje("Sesión cerrada correctamente.");
+});
